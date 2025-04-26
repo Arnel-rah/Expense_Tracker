@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Ajouter une Transaction</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" name="date" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <input type="text" name="description" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Montant (AR)</label>
+            <input type="number" step="0.01" name="montant" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Catégorie</label>
+            <input type="text" name="categorie" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Type</label>
+            <select name="type_transaction" class="form-select" required>
+                <option value="depense">Dépense</option>
+                <option value="revenu">Revenu</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}
