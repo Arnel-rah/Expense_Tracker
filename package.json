@@ -1,0 +1,24 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^4.1.4"
+  },
+  "name": "gestion_budget",
+  "version": "1.0.0",
+  "description": "Maîtrisez vos finances avec notre application web simple et puissante, pensée spécialement pour un budget mensuel en Ariary 🇲🇬.   Suivez vos dépenses, vos revenus, visualisez vos données, recevez des alertes et exportez tout en PDF !",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arnel-rah/gestion-budget.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Arnel-rah/gestion-budget/issues"
+  },
+  "homepage": "https://github.com/Arnel-rah/gestion-budget#readme"
+}
