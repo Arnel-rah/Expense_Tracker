@@ -1,6 +1,6 @@
-# 💸 Gestion Budget Mensuel — 350 000 AR
+# 💸 Gestion Budget Mensuel 
 
-Maîtrisez vos finances avec notre application web simple et puissante, pensée spécialement pour un budget mensuel de 350 000 Ariary 🇲🇬.  
+Maîtrisez vos finances avec notre application web simple et puissante, pensée spécialement pour un budget mensuel en Ariary 🇲🇬.  
 Suivez vos dépenses, vos revenus, visualisez vos données, recevez des alertes et exportez tout en PDF !
 
 [![Deploy on Heroku](https://img.shields.io/badge/Deploy%20on-Heroku-6762A6?style=for-the-badge&logo=heroku)](https://heroku.com/deploy?template=https://github.com/votre-repo)  
