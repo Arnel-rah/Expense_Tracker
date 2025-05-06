@@ -1,84 +1,119 @@
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Gestion Budget</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <div class="container mt-4">
-        <h1 class="text-center">Mon Budget Mensuel (350 000 AR)</h1>
-        
-        <!-- Alertes -->
-        {% set depenses_ratio = (total_depenses / 350000) * 100 %}
-        {% if depenses_ratio > 80 %}
-            <div class="alert alert-warning">
-                 Vous avez dépensé {{ depenses_ratio|round(1) }}% de votre budget !
-            </div>
-        {% endif %}
-        
-        <!-- Statistiques -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card bg-success text-white">
-                    <div class="card-body">
-                        <h5>Revenus</h5>
-                        <h3>{{ total_revenus }} AR</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card bg-danger text-white">
-                    <div class="card-body">
-                        <h5>Dépenses</h5>
-                        <h3>{{ total_depenses }} AR</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card bg-primary text-white">
-                    <div class="card-body">
-                        <h5>Solde</h5>
-                        <h3>{{ solde }} AR</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Graphique -->
-        <div class="mt-4">
-            <h3>Répartition des Dépenses</h3>
-            <img src="data:image/png;base64,{{ graph_url }}" class="img-fluid">
-        </div>
-        
-        <!-- Boutons -->
-        <div class="mt-3">
-            <a href="{{ url_for('ajouter_transaction') }}" class="btn btn-primary">➕ Ajouter</a>
-            <a href="{{ url_for('generer_facture') }}" class="btn btn-secondary">📄 Facture PDF</a>
-        </div>
-        
-        <!-- Liste des transactions -->
-        <table class="table mt-4">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Montant (AR)</th>
-                    <th>Catégorie</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in transactions %}
-                <tr>
-                    <td>{{ t.date }}</td>
-                    <td>{{ t.description }}</td>
-                    <td>{{ t.montant }} AR</td>
-                    <td>{{ t.categorie }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{% extends "base.html" %} {% block content %}
+<div class="dashboard-grid">
+  <!-- Cartes de synthèse -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Vue d'ensemble</h2>
+      <span class="text-sm">Mois en cours</span>
     </div>
-</body>
-</html>
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-label">Solde</div>
+        <div class="stat-value">
+          {{ solde }} <span class="currency">AR</span>
+        </div>
+        <div class="stat-change positive">
+          <i class="fas fa-arrow-up"></i> 12%
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revenus</div>
+        <div class="stat-value text-success">
+          {{ total_revenus }} <span class="currency">AR</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Dépenses</div>
+        <div class="stat-value text-danger">
+          {{ total_depenses }} <span class="currency">AR</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphique -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Répartition des dépenses</h2>
+      <button class="btn btn-sm">
+        <i class="fas fa-download"></i> Exporter
+      </button>
+    </div>
+    <div class="chart-container">
+      <canvas id="expensesChart"></canvas>
+      <canvas id="monthlyChart"></canvas>
+    </div>
+    
+  </div>
+
+  <!-- Dernières transactions -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Historique des transactions</h2>
+      <a
+        href="{{ url_for('ajouter_transaction') }}"
+        class="btn-card btn-primary btn-sm"
+      >
+        <i class="fas fa-plus"></i> Nouvelle
+      </a>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Montant</th>
+            <th>Catégorie</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transactions %}
+          <tr>
+            <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ t.description }}</td>
+            <td
+              class="{% if t.type_transaction == 'depense' %}text-danger{% else %}text-success{% endif %}"
+            >
+              {{ t.montant }} AR
+            </td>
+            <td>
+              <span
+                class="badge {% if t.type_transaction == 'depense' %}badge-expense{% else %}badge-income{% endif %}"
+              >
+                {{ t.categorie }}
+              </span>
+            </td>
+            <td class="actions">
+              <a
+                href="{{ url_for('modifier_transaction', id=t.id) }}"
+                class="icon-btn edit-btn"
+              >
+                <i class="fas fa-edit"></i>
+              </a>
+              <form
+                action="{{ url_for('supprimer_transaction', id=t.id) }}"
+                method="POST"
+                class="delete-form"
+                style="display: inline"
+              >
+                <button type="submit" class="icon-btn delete-btn">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  window.chartData = {
+    labels: {{ labels|tojson }},
+    values: {{ values|tojson }}
+  };
+</script>
+{% endblock %}

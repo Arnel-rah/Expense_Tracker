@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="auth-title">Inscription</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" class="auth-form" id="register-form">
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" name="username" id="username" class="form-control" required
+                       minlength="3" maxlength="50"
+                       pattern="[a-zA-Z0-9_]+" 
+                       title="Lettres, chiffres et underscores seulement">
+                <small class="form-text text-danger" id="username-feedback"></small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" class="form-control" required>
+                <small class="form-text text-danger" id="email-feedback"></small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" name="password" id="password" class="form-control" required
+                       minlength="8"
+                       title="8 caractères minimum">
+                <small class="form-text text-danger" id="password-feedback"></small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">S'inscrire</button>
+        </form>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('register-form');
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            
+            // Validation en temps réel
+            usernameInput.addEventListener('blur', checkUsername);
+            emailInput.addEventListener('blur', checkEmail);
+            passwordInput.addEventListener('input', checkPassword);
+            
+            // Empêche la soumission si invalide
+            form.addEventListener('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                }
+            });
+            
+            function checkUsername() {
+                const username = usernameInput.value.trim();
+                const feedback = document.getElementById('username-feedback');
+                
+                if (username.length < 3) {
+                    feedback.textContent = 'Minimum 3 caractères';
+                    return false;
+                }
+                
+                if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    feedback.textContent = 'Caractères autorisés: lettres, chiffres, _';
+                    return false;
+                }
+                
+                // Vérification serveur
+                fetch(`/check-username?username=${encodeURIComponent(username)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        feedback.textContent = data.message || '';
+                        feedback.style.color = data.available ? 'green' : 'red';
+                    });
+                
+                return true;
+            }
+            
+            function checkEmail() {
+                const email = emailInput.value.trim();
+                const feedback = document.getElementById('email-feedback');
+                
+                if (!email.includes('@') || !email.includes('.')) {
+                    feedback.textContent = 'Email invalide';
+                    return false;
+                }
+                
+                // Vérification serveur optionnelle
+                fetch(`/check-email?email=${encodeURIComponent(email)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.available) {
+                            feedback.textContent = data.message;
+                        }
+                    });
+                
+                return true;
+            }
+            
+            function checkPassword() {
+                const password = passwordInput.value;
+                const feedback = document.getElementById('password-feedback');
+                
+                if (password.length < 8) {
+                    feedback.textContent = '8 caractères minimum';
+                    return false;
+                }
+                
+                feedback.textContent = '';
+                return true;
+            }
+            
+            function validateForm() {
+                return checkUsername() && checkEmail() && checkPassword();
+            }
+        });
+        </script>
+        
+        <div class="auth-footer">
+            <p>Déjà inscrit? <a href="{{ url_for('login') }}">Se connecter</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
