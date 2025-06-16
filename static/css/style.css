@@ -284,6 +284,7 @@ body {
   color: var(--gray);
   cursor: pointer;
   transition: var(--transition);
+  list-style-type: none;
 }
 
 .icon-btn:hover {

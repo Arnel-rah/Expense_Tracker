@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import os
-
+import requests
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or 'une_cle_secrete_tres_complexe'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Arnel012*/@localhost/gestion_budget'
@@ -223,7 +223,7 @@ def modifier_transaction(id):
         return redirect(url_for('accueil'))
     return render_template('modifier.html', transaction=transaction)
 
-@app.route('/supprimer/<int:id>', methods=['POST'])
+@app.route('/supprimer/<int:id>', methods=['DELETE'])
 @login_required
 def supprimer_transaction(id):
     abort = ()
@@ -248,7 +248,7 @@ def generer_facture():
 
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
+    pdf.set_font("Quicksand", size=14)
 
     pdf.cell(200, 10, txt=f"Rapport Budget Mensuel - {current_user.username}", ln=1, align='C')
     pdf.cell(200, 10, txt=f"Solde Final: {solde} AR", ln=1, align='L')
