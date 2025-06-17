@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from fpdf import FPDF
+from flask import abort, flash, redirect, url_for
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -223,18 +224,25 @@ def modifier_transaction(id):
         return redirect(url_for('accueil'))
     return render_template('modifier.html', transaction=transaction)
 
-@app.route('/supprimer/<int:id>', methods=['DELETE'])
+
+# from flask import abort, flash, redirect, url_for
+
+@app.route('/supprimer/<int:id>', methods=['POST'])
 @login_required
 def supprimer_transaction(id):
-    abort = ()
     transaction = Transaction.query.get_or_404(id)
-    if transaction.author != current_user:
+    if transaction.user != current_user:
         abort(403)
     
-    db.session.delete(transaction)
-    db.session.commit()
-    flash('Transaction supprimée avec succès', 'success')
-    return redirect(url_for('accueil'))
+    try:
+        db.session.delete(transaction)
+        db.session.commit()
+        flash('Transaction supprimée avec succès', 'success')
+        return redirect(url_for('accueil'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erreur lors de la suppression : {str(e)}', 'danger')
+        return redirect(url_for('accueil'))
 
 @app.route('/facture')
 @login_required

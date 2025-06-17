@@ -43,7 +43,6 @@
       <canvas id="expensesChart"></canvas>
       <canvas id="monthlyChart"></canvas>
     </div>
-    
   </div>
 
   <!-- Dernières transactions -->
@@ -73,19 +72,30 @@
           <tr>
             <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
             <td>{{ t.description }}</td>
-            <td class="{% if t.type_transaction == 'depense' %}text-danger{% else %}text-success{% endif %}">
+            <td
+              class="{% if t.type_transaction == 'depense' %}text-danger{% else %}text-success{% endif %}"
+            >
               {{ t.montant }} AR
             </td>
             <td>
-              <span class="badge {% if t.type_transaction == 'depense' %}badge-expense{% else %}badge-income{% endif %}">
+              <span
+                class="badge {% if t.type_transaction == 'depense' %}badge-expense{% else %}badge-income{% endif %}"
+              >
                 {{ t.categorie }}
               </span>
             </td>
             <td class="actions">
-              <a href="{{ url_for('modifier_transaction', id=t.id) }}" class="icon-btn edit-btn">
+              <a
+                href="{{ url_for('modifier_transaction', id=t.id) }}"
+                class="icon-btn edit-btn"
+              >
                 <i class="fas fa-edit"></i>
               </a>
-              <form action="{{ url_for('supprimer_transaction', id=t.id) }}" method="DELETE" class="delete-form" style="display: inline">
+              <form
+                action="{{ url_for('supprimer_transaction', id=t.id) }}"
+                method="POST"
+                class="delete-form"
+                style="display: inline">
                 <button type="submit" class="icon-btn delete-btn">
                   <i class="fas fa-trash"></i>
                 </button>
