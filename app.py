@@ -277,8 +277,6 @@ def initdb_command():
     db.create_all()
     print('Base de données initialisée.')
 
-# ... Votre code existant ...
-
 if __name__ == '__main__':
     app.run(
         debug=True,
