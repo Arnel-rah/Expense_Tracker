@@ -9,11 +9,13 @@ import io
 import base64
 import os
 import requests
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY') or 'une_cle_secrete_tres_complexe'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Arnel012*/@localhost/gestion_budget'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+from dotenv import load_dotenv
+load_dotenv()
 
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -276,8 +278,6 @@ def initdb_command():
     """Initialise la base de données."""
     db.create_all()
     print('Base de données initialisée.')
-
-# ... Votre code existant ...
 
 if __name__ == '__main__':
     app.run(
