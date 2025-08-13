@@ -1,4 +1,5 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+{% block content %}
 <div class="dashboard-grid">
   <!-- Cartes de synthèse -->
   <div class="card">
@@ -49,10 +50,7 @@
   <div class="card">
     <div class="card-header">
       <h2 class="card-title">Historique des transactions</h2>
-      <a
-        href="{{ url_for('ajouter_transaction') }}"
-        class="btn-card btn-primary btn-sm"
-      >
+      <a href="{{ url_for('transaction.ajouter_transaction') }}" class="btn-card btn-primary btn-sm">
         <i class="fas fa-plus"></i> Nouvelle
       </a>
     </div>
@@ -72,31 +70,19 @@
           <tr>
             <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
             <td>{{ t.description }}</td>
-            <td
-              class="{% if t.type_transaction == 'depense' %}text-danger{% else %}text-success{% endif %}"
-            >
+            <td class="{% if t.type_transaction == 'depense' %}text-danger{% else %}text-success{% endif %}">
               {{ t.montant }} AR
             </td>
             <td>
-              <span
-                class="badge {% if t.type_transaction == 'depense' %}badge-expense{% else %}badge-income{% endif %}"
-              >
+              <span class="badge {% if t.type_transaction == 'depense' %}badge-expense{% else %}badge-income{% endif %}">
                 {{ t.categorie }}
               </span>
             </td>
             <td class="actions">
-              <a
-                href="{{ url_for('modifier_transaction', id=t.id) }}"
-                class="icon-btn edit-btn"
-              >
+              <a href="{{ url_for('transaction.modifier_transaction', id=t.id) }}" class="icon-btn edit-btn">
                 <i class="fas fa-edit"></i>
               </a>
-              <form
-                action="{{ url_for('supprimer_transaction', id=t.id) }}"
-                method="POST"
-                class="delete-form"
-                style="display: inline"
-              >
+              <form action="{{ url_for('transaction.supprimer_transaction', id=t.id) }}" method="POST" class="delete-form" style="display: inline">
                 <button type="submit" class="icon-btn delete-btn">
                   <i class="fas fa-trash"></i>
                 </button>
@@ -111,8 +97,8 @@
 </div>
 <script>
   window.chartData = {
-    labels: {{ labels|tojson }},
-    values: {{ values|tojson }}
+    labels: {{ labels|default([])|tojson }},
+    values: {{ values|default([])|tojson }}
   };
 </script>
 {% endblock %}
