@@ -47,13 +47,9 @@
             const usernameInput = document.getElementById('username');
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
-            
-            // Validation en temps réel
             usernameInput.addEventListener('blur', checkUsername);
             emailInput.addEventListener('blur', checkEmail);
             passwordInput.addEventListener('input', checkPassword);
-            
-            // Empêche la soumission si invalide
             form.addEventListener('submit', function(e) {
                 if (!validateForm()) {
                     e.preventDefault();
@@ -74,7 +70,6 @@
                     return false;
                 }
                 
-                // Vérification serveur
                 fetch(`/check-username?username=${encodeURIComponent(username)}`)
                     .then(response => response.json())
                     .then(data => {
@@ -93,9 +88,7 @@
                     feedback.textContent = 'Email invalide';
                     return false;
                 }
-                
-                // Vérification serveur optionnelle
-                fetch(`/check-email?email=${encodeURIComponent(email)}`)
+                                fetch(`/check-email?email=${encodeURIComponent(email)}`)
                     .then(response => response.json())
                     .then(data => {
                         if (!data.available) {

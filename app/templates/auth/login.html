@@ -15,7 +15,7 @@
             {% endif %}
         {% endwith %}
         
-        <form method="POST" class="auth-form">
+        <form method="POST" class="auth-form" action="{{ url_for('auth.login') }}">
             <div class="form-group">
                 <label for="username">Nom d'utilisateur</label>
                 <input type="text" name="username" id="username" class="form-control" required>
@@ -30,7 +30,7 @@
         </form>
         
         <div class="auth-footer">
-            <p>Pas encore de compte? <a href="{{ url_for('register') }}">S'inscrire</a></p>
+            <p>Pas encore de compte? <a href="{{ url_for('auth.register') }}">S'inscrire</a></p>
         </div>
     </div>
 </div>
