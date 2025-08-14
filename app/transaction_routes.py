@@ -145,6 +145,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        flash('donnée reçu: ' + username + password)
         user = User.query.filter_by(username=username).first()
         if not user or not check_password_hash(user.password_hash, password):
             flash('Nom d’utilisateur ou mot de passe incorrect.', 'danger')
@@ -155,7 +156,7 @@ def login():
         next_page = request.args.get('next')
         return redirect(next_page or url_for('transaction.accueil'))
 
-    return render_template('auth/login.html')
+    return render_template('auth/accueil.html')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
