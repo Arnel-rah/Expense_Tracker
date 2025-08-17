@@ -1,126 +1,159 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card">
-        <h2 class="auth-title">Inscription</h2>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <form method="POST" class="auth-form" id="register-form">
-            <div class="form-group">
-                <label for="username">Nom d'utilisateur</label>
-                <input type="text" name="username" id="username" class="form-control" required
-                       minlength="3" maxlength="50"
-                       pattern="[a-zA-Z0-9_]+" 
-                       title="Lettres, chiffres et underscores seulement">
-                <small class="form-text text-danger" id="username-feedback"></small>
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" class="form-control" required>
-                <small class="form-text text-danger" id="email-feedback"></small>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" name="password" id="password" class="form-control" required
-                       minlength="8"
-                       title="8 caractères minimum">
-                <small class="form-text text-danger" id="password-feedback"></small>
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">S'inscrire</button>
-        </form>
-        
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('register-form');
-            const usernameInput = document.getElementById('username');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            usernameInput.addEventListener('blur', checkUsername);
-            emailInput.addEventListener('blur', checkEmail);
-            passwordInput.addEventListener('input', checkPassword);
-            form.addEventListener('submit', function(e) {
-                if (!validateForm()) {
-                    e.preventDefault();
-                }
-            });
-            
-            function checkUsername() {
-                const username = usernameInput.value.trim();
-                const feedback = document.getElementById('username-feedback');
-                
-                if (username.length < 3) {
-                    feedback.textContent = 'Minimum 3 caractères';
-                    return false;
-                }
-                
-                if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                    feedback.textContent = 'Caractères autorisés: lettres, chiffres, _';
-                    return false;
-                }
-                
-                fetch(`/check-username?username=${encodeURIComponent(username)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        feedback.textContent = data.message || '';
-                        feedback.style.color = data.available ? 'green' : 'red';
-                    });
-                
-                return true;
-            }
-            
-            function checkEmail() {
-                const email = emailInput.value.trim();
-                const feedback = document.getElementById('email-feedback');
-                
-                if (!email.includes('@') || !email.includes('.')) {
-                    feedback.textContent = 'Email invalide';
-                    return false;
-                }
-                                fetch(`/check-email?email=${encodeURIComponent(email)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.available) {
-                            feedback.textContent = data.message;
-                        }
-                    });
-                
-                return true;
-            }
-            
-            function checkPassword() {
-                const password = passwordInput.value;
-                const feedback = document.getElementById('password-feedback');
-                
-                if (password.length < 8) {
-                    feedback.textContent = '8 caractères minimum';
-                    return false;
-                }
-                
-                feedback.textContent = '';
-                return true;
-            }
-            
-            function validateForm() {
-                return checkUsername() && checkEmail() && checkPassword();
-            }
-        });
-        </script>
-        
-        <div class="auth-footer">
-            <p>Déjà inscrit? <a href="{{ url_for('login') }}">Se connecter</a></p>
+<div class="container">
+    <h2>Inscription</h2>
+    <form method="POST" class="auth-form" id="register-form" action="{{ url_for('auth.register') }}">
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <input type="text" name="username" id="username" class="form-control" required>
+            <small id="username-feedback" class="feedback"></small>
         </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" class="form-control" required>
+            <small id="email-feedback" class="feedback"></small>
+        </div>
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" name="password" id="password" class="form-control" required>
+            <small id="password-feedback" class="feedback"></small>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+    </form>
+    <div class="auth-footer">
+        <p>Déjà un compte ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('register-form');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    
+    let usernameValid = false;
+    let emailValid = false;
+    let passwordValid = false;
+
+    usernameInput.addEventListener('blur', async () => {
+        usernameValid = await checkUsername();
+    });
+    emailInput.addEventListener('blur', async () => {
+        emailValid = await checkEmail();
+    });
+    passwordInput.addEventListener('input', () => {
+        passwordValid = checkPassword();
+    });
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Tentative de soumission du formulaire');
+        const isValid = await validateForm();
+        console.log('Résultat validation:', { usernameValid, emailValid, passwordValid });
+        if (isValid) {
+            console.log('Soumission du formulaire');
+            form.submit();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Veuillez corriger les erreurs dans le formulaire.',
+            });
+        }
+    });
+    
+    async function checkUsername() {
+        const username = usernameInput.value.trim();
+        const feedback = document.getElementById('username-feedback');
+        console.log('Vérification username:', username);
+        
+        if (username.length < 3) {
+            feedback.textContent = 'Minimum 3 caractères';
+            feedback.style.color = 'red';
+            return false;
+        }
+        
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            feedback.textContent = 'Caractères autorisés: lettres, chiffres, _';
+            feedback.style.color = 'red';
+            return false;
+        }
+        
+        try {
+            const response = await fetch(`/auth/check-username?username=${encodeURIComponent(username)}`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('Données check-username:', data);
+            feedback.textContent = data.message || '';
+            feedback.style.color = data.available ? 'green' : 'red';
+            return data.available;
+        } catch (error) {
+            console.error('Erreur AJAX check-username:', error);
+            feedback.textContent = 'Erreur lors de la vérification du nom d\'utilisateur';
+            feedback.style.color = 'red';
+            return false;
+        }
+    }
+    
+    async function checkEmail() {
+        const email = emailInput.value.trim();
+        const feedback = document.getElementById('email-feedback');
+        console.log('Vérification email:', email);
+        
+        if (!email.includes('@') || !email.includes('.')) {
+            feedback.textContent = 'Email invalide';
+            feedback.style.color = 'red';
+            return false;
+        }
+        
+        try {
+            const response = await fetch(`/auth/check-email?email=${encodeURIComponent(email)}`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('Données check-email:', data);
+            feedback.textContent = data.message || '';
+            feedback.style.color = data.available ? 'green' : 'red';
+            return data.available;
+        } catch (error) {
+            console.error('Erreur AJAX check-email:', error);
+            feedback.textContent = 'Erreur lors de la vérification de l\'email';
+            feedback.style.color = 'red';
+            return false;
+        }
+    }
+    
+    function checkPassword() {
+        const password = passwordInput.value;
+        const feedback = document.getElementById('password-feedback');
+        console.log('Vérification password:', password);
+        
+        if (password.length < 8) {
+            feedback.textContent = '8 caractères minimum';
+            feedback.style.color = 'red';
+            return false;
+        }
+        
+        feedback.textContent = '';
+        return true;
+    }
+    
+    async function validateForm() {
+        usernameValid = await checkUsername();
+        emailValid = await checkEmail();
+        passwordValid = checkPassword();
+        console.log('Validation - username:', usernameValid, 'email:', emailValid, 'password:', passwordValid);
+        return usernameValid && emailValid && passwordValid;
+    }
+});
+</script>
 {% endblock %}
