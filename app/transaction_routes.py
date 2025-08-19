@@ -229,22 +229,7 @@ def check_username():
     except Exception as e:
         print(f"Erreur dans check-username: {e}")
         return jsonify({'available': False, 'message': 'Erreur serveur'}), 500
-
-@auth_bp.route('/check-email')
-def check_email():
-    email = request.args.get('email')
-    print(f"Requête AJAX check-email pour: {email}")
-    try:
-        user = User.query.filter_by(email=email).first()
-        return jsonify({
-            'available': not user,
-            'message': 'Cet email est déjà enregistré' if user else 'Email disponible'
-        })
-    except Exception as e:
-        print(f"Erreur dans check-email: {e}")
-        return jsonify({'available': False, 'message': 'Erreur serveur'}), 500
-    
-    
+  
 @auth_bp.route('/logout')
 @login_required
 def logout():
