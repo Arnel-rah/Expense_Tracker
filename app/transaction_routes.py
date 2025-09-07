@@ -8,10 +8,10 @@ from flask import jsonify
 
 transaction_bp = Blueprint('transaction', __name__)
 
-
 @transaction_bp.route('/')
 @login_required
 def accueil():
+    print("Accès à la route /accueil pour l'utilisateur:", current_user.id)
     transactions = Transaction.query.filter_by(user_id=current_user.id).order_by(Transaction.date.desc()).all()
 
     total_revenus = db.session.query(db.func.sum(Transaction.montant))\
@@ -137,6 +137,7 @@ def generer_facture():
     return response
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     print(f"Méthode reçue: {request.method}")
@@ -181,11 +182,9 @@ def register():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     print(f"Méthode reçue: {request.method}")
-    if request.method == 'GET':
-        print("Rendu de la page de connexion")
     if current_user.is_authenticated:
         print("Utilisateur déjà authentifié, redirection vers accueil")
-        return redirect(url_for('transaction.accueil'), code=302)
+        return redirect(url_for('transaction.accueil'))
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -193,27 +192,26 @@ def login():
         if not username or not password:
             flash('Veuillez remplir tous les champs.', 'danger')
             print("Champs manquants dans le formulaire de connexion")
-            return redirect(url_for('auth.login'), code=302)
+            return redirect(url_for('auth.login'))
         user = User.query.filter_by(username=username).first()
         if not user:
             flash('Nom d’utilisateur inexistant.', 'danger')
             print(f"Utilisateur non trouvé pour username: {username}")
-            return redirect(url_for('auth.login'), code=302)
+            return redirect(url_for('auth.login'))
         if not check_password_hash(user.password_hash, password):
             flash('Mot de passe incorrect.', 'danger')
             print(f"Mot de passe incorrect pour username: {username}")
-            return redirect(url_for('auth.login'), code=302)
+            return redirect(url_for('auth.login'))
         try:
-            login_user(user)
+            login_user(user, remember=True)
             print(f"Connexion réussie pour {username}, session créée")
+            flash('Connexion réussie !', 'success')
+            print(f"Redirection vers: {url_for('transaction.accueil')}")
+            return redirect(url_for('transaction.accueil'))
         except Exception as e:
             print(f"Erreur lors de login_user: {e}")
             flash('Erreur lors de la connexion.', 'danger')
-            return redirect(url_for('auth.login'), code=302)
-        flash('Connexion réussie !', 'success')
-        next_page = request.args.get('next')
-        print(f"Redirection vers: {next_page or url_for('transaction.accueil')}")
-        return redirect(next_page or url_for('transaction.accueil'), code=302)
+            return redirect(url_for('auth.login'))
     return render_template('auth/login.html')
 
 @auth_bp.route('/check-username')
@@ -229,7 +227,7 @@ def check_username():
     except Exception as e:
         print(f"Erreur dans check-username: {e}")
         return jsonify({'available': False, 'message': 'Erreur serveur'}), 500
-  
+
 @auth_bp.route('/logout')
 @login_required
 def logout():
